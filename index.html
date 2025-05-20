@@ -764,20 +764,26 @@
           hour12: false
         });
       }
-      <script>
-      fetch("https://api.ipapi.com/api/check?access_key=da626202971b190cedd872444cd0b8a6")
+      const proxyIP = "{{PROXY_IP}}".trim();
+      const accessKey = "da626202971b190cedd872444cd0b8a6";
+      const endpoint = proxyIP && proxyIP !== "" && proxyIP !== "{{PROXY_IP}}" ?
+        `https://api.ipapi.com/api/${proxyIP}?access_key=${accessKey}` :
+        `https://api.ipapi.com/api/check?access_key=${accessKey}`;
+    
+      fetch(endpoint)
         .then((res) => res.json())
         .then((data) => {
           document.getElementById("ip").textContent = data.ip || "N/A";
           document.getElementById("country").textContent = `${data.country_name || "N/A"} ${data.location?.country_flag_emoji || ""}`;
           document.getElementById("city").textContent = data.city || "N/A";
           document.getElementById("isp").textContent = data.connection?.isp || data.org || "N/A";
-          document.getElementById("proxy").textContent = data.security?.is_proxy ? "Yes (" + (data.security?.proxy_type || "unknown") + ")" : "No";
+          document.getElementById("proxy").textContent = data.security?.is_proxy ? `Yes (${data.security?.proxy_type || "unknown"})` : "No";
           document.getElementById("hostname").textContent = data.hostname || "N/A";
         })
         .catch((err) => {
           console.error("IPAPI Error:", err);
-          document.getElementById("proxy-info").innerHTML = "<p style='color: var(--text-secondary)'>Could not load connection data.</p>";
+          document.getElementById("proxy-info").innerHTML =
+            "<p style='color: var(--text-secondary)'>Could not load connection data.</p>";
         });
     </script>
   </body>
