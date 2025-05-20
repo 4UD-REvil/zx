@@ -580,14 +580,14 @@
       </div>
       <!-- Proxy Info Card -->
       <div class="config-card">
-        <div class="config-title">Connection Info</div>
+        <div class="config-title">Connection Details</div>
         <div class="attributes" id="proxy-info">
           <div class="attribute"><span>IP Address:</span><strong id="ip"></strong></div>
           <div class="attribute"><span>Country:</span><strong id="country"></strong></div>
           <div class="attribute"><span>City:</span><strong id="city"></strong></div>
           <div class="attribute"><span>ISP:</span><strong id="isp"></strong></div>
-          <div class="attribute"><span>Using Proxy:</span><strong id="proxy"></strong></div>
-          <div class="attribute"><span>Hosting Provider:</span><strong id="hosting"></strong></div>
+          <div class="attribute"><span>Proxy Detected:</span><strong id="proxy"></strong></div>
+          <div class="attribute"><span>Hostname:</span><strong id="hostname"></strong></div>
         </div>
       </div>
       <!-- Xray Core Clients -->
@@ -764,25 +764,20 @@
           hour12: false
         });
       }
-      fetch("https://ip-api.com/json/?fields=country,city,isp,proxy,hosting,query,status")
+      <script>
+      fetch("https://api.ipapi.com/api/check?access_key=da626202971b190cedd872444cd0b8a6")
         .then((res) => res.json())
         .then((data) => {
-          if (data.status === "success") {
-            document.getElementById("ip").textContent = data.query;
-            document.getElementById("country").textContent = data.country;
-            document.getElementById("city").textContent = data.city;
-            document.getElementById("isp").textContent = data.isp;
-            document.getElementById("proxy").textContent = data.proxy ? "Yes" : "No";
-            document.getElementById("hosting").textContent = data.hosting ? "Yes" : "No";
-          } else {
-            document.getElementById("proxy-info").innerHTML =
-              "<p style='color: var(--text-secondary)'>Could not fetch connection details.</p>";
-          }
+          document.getElementById("ip").textContent = data.ip || "N/A";
+          document.getElementById("country").textContent = `${data.country_name || "N/A"} ${data.location?.country_flag_emoji || ""}`;
+          document.getElementById("city").textContent = data.city || "N/A";
+          document.getElementById("isp").textContent = data.connection?.isp || data.org || "N/A";
+          document.getElementById("proxy").textContent = data.security?.is_proxy ? "Yes (" + (data.security?.proxy_type || "unknown") + ")" : "No";
+          document.getElementById("hostname").textContent = data.hostname || "N/A";
         })
         .catch((err) => {
-          console.error("IP Info Fetch Error:", err);
-          document.getElementById("proxy-info").innerHTML =
-            "<p style='color: var(--text-secondary)'>Connection info unavailable.</p>";
+          console.error("IPAPI Error:", err);
+          document.getElementById("proxy-info").innerHTML = "<p style='color: var(--text-secondary)'>Could not load connection data.</p>";
         });
     </script>
   </body>
