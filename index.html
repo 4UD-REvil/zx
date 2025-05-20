@@ -6,7 +6,6 @@
     <title>VLESS Proxy Configuration</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://cdn.jsdelivr.net/npm/firacode@6.2.0/distr/fira_code.css">
     <link href="https://p.typekit.net/p.css?s=1&k=tsd8lrs&ht=tk&f=10954.13453.13458.13460.13461.13464.13465.13470.18498.22487.25676.25679&a=691756&app=typekit&e=css">
     <link  href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Metrophobic&family=Roboto+Mono:wght@100..700&display=swap" rel="stylesheet">
     <style>
@@ -14,26 +13,6 @@
         margin: 0;
         padding: 0;
         box-sizing: border-box;
-      }
-
-      @import url(https://cdn.jsdelivr.net/npm/firacode@6.2.0/distr/fira_code.css);
-      @import url("https://p.typekit.net/p.css?s=1&k=tsd8lrs&ht=tk&f=10954.13453.13458.13460.13461.13464.13465.13470.18498.22487.25676.25679&a=691756&app=typekit&e=css");
-
-      @font-face {
-        font-family: "freight-sans-pro";
-        src:
-          url("https://use.typekit.net/af/442215/000000000000000000010b5a/27/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3")
-            format("woff2"),
-          url("https://use.typekit.net/af/442215/000000000000000000010b5a/27/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3")
-            format("opentype"),
-          url("https://use.typekit.net/af/8dd886/000000000000000000010b5c/27/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n5&v=3")
-            format("woff2"),
-          url("https://use.typekit.net/af/8dd886/000000000000000000010b5c/27/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n5&v=3")
-            format("opentype");
-        font-display: swap;
-        font-style: normal;
-        font-weight: normal;
-        font-stretch: normal;
       }
 
       @font-face {
@@ -601,23 +580,14 @@
       </div>
       <!-- Proxy Info Card -->
       <div class="config-card">
-        <div class="config-title">Proxy Information</div>
-        <div class="attributes">
-          <div class="attribute">
-            <span>Proxy IP / Host:</span>
-            <strong id="proxy-ip-display">{{PROXY_IP}}</strong>
-          </div>
-          <div class="attribute">
-            <span>Status:</span>
-            <strong>
-              <span class="status-indicator status-active" aria-hidden="true"></span>
-              <strong id="proxy-status">Active</strong>
-            </strong>
-          </div>
-          <div class="attribute">
-            <span>Last Updated:</span>
-            <strong id="last-updated">{{LAST_UPDATED}}</strong>
-          </div>
+        <div class="config-title">Connection Info</div>
+        <div class="attributes" id="proxy-info">
+          <div class="attribute"><span>IP Address:</span><strong id="ip"></strong></div>
+          <div class="attribute"><span>Country:</span><strong id="country"></strong></div>
+          <div class="attribute"><span>City:</span><strong id="city"></strong></div>
+          <div class="attribute"><span>ISP:</span><strong id="isp"></strong></div>
+          <div class="attribute"><span>Using Proxy:</span><strong id="proxy"></strong></div>
+          <div class="attribute"><span>Hosting Provider:</span><strong id="hosting"></strong></div>
         </div>
       </div>
       <!-- Xray Core Clients -->
@@ -794,27 +764,26 @@
           hour12: false
         });
       }
-      function initializeProxyData() {
-        document.getElementById("last-updated").textContent = formatDateTime(new Date());
-        document.getElementById("current-year").textContent = new Date().getFullYear();
-      }
-      function checkProxyStatus() {
-        const statusIndicator = document.querySelector(".status-indicator");
-        const statusText = document.getElementById("proxy-status");
-        statusIndicator.classList.add("loading");
-        setTimeout(() => {
-          const isActive = Math.random() > 0.1;
-          statusIndicator.classList.remove("loading");
-          statusIndicator.classList.toggle("status-active", isActive);
-          statusIndicator.classList.toggle("status-inactive", !isActive);
-          statusText.textContent = isActive ? "Active" : "Inactive";
-          document.getElementById("last-updated").textContent = formatDateTime(new Date());
-        }, 1000);
-      }
-      function setupImportLinks() {}
-      initializeProxyData();
-      checkProxyStatus();
-      setInterval(checkProxyStatus, 50000);
+      fetch("https://ip-api.com/json/?fields=country,city,isp,proxy,hosting,query,status")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.status === "success") {
+            document.getElementById("ip").textContent = data.query;
+            document.getElementById("country").textContent = data.country;
+            document.getElementById("city").textContent = data.city;
+            document.getElementById("isp").textContent = data.isp;
+            document.getElementById("proxy").textContent = data.proxy ? "Yes" : "No";
+            document.getElementById("hosting").textContent = data.hosting ? "Yes" : "No";
+          } else {
+            document.getElementById("proxy-info").innerHTML =
+              "<p style='color: var(--text-secondary)'>Could not fetch connection details.</p>";
+          }
+        })
+        .catch((err) => {
+          console.error("IP Info Fetch Error:", err);
+          document.getElementById("proxy-info").innerHTML =
+            "<p style='color: var(--text-secondary)'>Connection info unavailable.</p>";
+        });
     </script>
   </body>
 </html>
